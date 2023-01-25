@@ -3,8 +3,14 @@ package boundedscroll;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+/**
+ * ScrollIterator<E> implements ListIterator<E>
+ * @param <E> generic datatype
+ */
 public class ScrollIterator<E>  implements ListIterator<E> {
-
+    /**
+     * the scroll
+     */
     Scroll<E> scroll;
 
     /**
@@ -34,11 +40,7 @@ public class ScrollIterator<E>  implements ListIterator<E> {
         if(!hasNext()){
             throw new NoSuchElementException();
         }
-        //get the next element and advances the cursor position
         return scroll.getNext();
-//        E element = scroll.getNext();
-//        scroll.advance();
-//        return element;
     }
 
     /**
@@ -48,7 +50,7 @@ public class ScrollIterator<E>  implements ListIterator<E> {
     @Override
     public boolean hasPrevious() {
 
-        return scroll.leftLength() - 1 != 0;
+        return scroll.leftLength()  != 0;
     }
 
     /**

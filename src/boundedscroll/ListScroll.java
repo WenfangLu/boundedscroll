@@ -8,29 +8,37 @@ public class ListScroll<E> extends AbstractScroll<E>{
     public List<E> elements;
     private int pos;
 
+    /**
+     * the constructor of ListScroll
+     * @param max
+     */
     public ListScroll(int max) {
         super(max);
         elements = new ArrayList<>();
+        pos = 0;
     }
 
     /**
-     * {@inheritDoc}
+     * Inserts an element to the right of the cursor
+     * @param elem the element to be pushed into this scroll
+     * @throws IllegalArgumentException
      */
     @Override
     public void insert(E elem) throws IllegalArgumentException {
-        if (elements.size() == capacity()) {
+        if (rightLength() + leftLength() == capacity()) {
             throw new IllegalStateException();
         }
         if (elem == null) {
-            throw new IllegalStateException();
+            throw new IllegalArgumentException();
         }
         elements.add(pos, elem);
     }
 
 
-
     /**
-     * {@inheritDoc}
+     * Deletes and returns the element to the right of the cursor
+     * @return the removed element
+     * @throws IllegalStateException
      */
     @Override
     public E delete() throws IllegalStateException {
@@ -43,7 +51,8 @@ public class ListScroll<E> extends AbstractScroll<E>{
     }
 
     /**
-     * {@inheritDoc}
+     * Advances the cursor one element to the right
+     * @throws IllegalStateException
      */
     @Override
     public void advance() throws IllegalStateException {
@@ -54,33 +63,28 @@ public class ListScroll<E> extends AbstractScroll<E>{
     }
 
     /**
-     * {@inheritDoc}
+     * Advances the cursor to the end of the scroll
+     * @throws IllegalStateException
      */
     @Override
     public void advanceToEnd() throws IllegalStateException {
-        if(rightLength() > 0){
-            while(pos < elements.size() -1){
-                advance();
-            }
-        }else{
-            throw new IllegalStateException();
-        }
+        pos = elements.size();
     }
 
     /**
-     * {@inheritDoc}
+     * Retreats the cursor one element to the left
+     * @throws IllegalStateException
      */
     @Override
     public void retreat() throws IllegalStateException{
-
-//        if (leftLength() == 0) {
-//            throw new IllegalStateException();
-//        }
+        if(leftLength() ==0){
+            throw new IllegalStateException();
+        }
         pos = pos - 1;
     }
 
     /**
-     * {@inheritDoc}
+     *  Resets the cursor to the beginning of the scroll
      */
     @Override
     public void reset() {
@@ -88,25 +92,31 @@ public class ListScroll<E> extends AbstractScroll<E>{
     }
 
     /**
-     * {@inheritDoc}
+     * Swaps the right part of this scroll with the right part of that scroll
+     * @param that that scroll wants to swap right
+     * @throws IllegalStateException
      */
     @Override
-    public void swapRights(Scroll<E> that) throws IllegalArgumentException {
+    public void swapRights(Scroll<E> that) throws IllegalStateException {
         if(this.leftLength() + that.rightLength() > this.capacity() ||
                 this.rightLength() + that.leftLength() > that.capacity()){
-            throw new IllegalArgumentException();
+            throw new IllegalStateException();
         }
         super.swapRights(that);
     }
+
     /**
-     * {@inheritDoc}
+     * The number of elements to the left of the cursor
+     * @return the left length
      */
     @Override
     public int leftLength() {
         return pos;
     }
+
     /**
-     * {@inheritDoc}
+     * The number of elements to the right of the cursor
+     * @return the right length
      */
     @Override
     public int rightLength() {
@@ -115,8 +125,8 @@ public class ListScroll<E> extends AbstractScroll<E>{
     }
 
     /**
-     *
-     * {@inheritDoc}
+     * the capacity of ListScroll
+     * @return  the capacity
      */
     @Override
     public int capacity() {
@@ -124,10 +134,12 @@ public class ListScroll<E> extends AbstractScroll<E>{
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a new instance of a scroll. The new scroll has the same concrete type that "this" scroll does,
+     * and it also has the same capacity
+     * @return a list scroll
      */
     @Override
     public Scroll<E> newInstance() {
-        return new LinkedScroll<E>(capacity());
+        return new ListScroll<E>(getCapacity());
     }
 }

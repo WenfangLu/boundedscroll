@@ -1,5 +1,9 @@
 package boundedscroll;
 
+/**
+ * Implement scroll by circle linkedList
+ * @param <E>
+ */
 public class LinkedScroll<E> extends AbstractScroll<E> {
 
     /**
@@ -14,7 +18,13 @@ public class LinkedScroll<E> extends AbstractScroll<E> {
         }
     }
 
+    /**
+     * The start node of guard
+     */
     public Node guard;
+    /**
+     * the cursor node
+     */
     public Node cursor;
 
     /**
@@ -32,96 +42,100 @@ public class LinkedScroll<E> extends AbstractScroll<E> {
     }
 
     /**
-     * {@inheritDoc}
+     * Inserts an element to the right of the cursor
+     * @param elem the element to be pushed into this scroll
+     * @throws IllegalArgumentException
+     * @throws IllegalStateException
      */
     @Override
-    public void insert(E elem) throws IllegalArgumentException {
-        Node newNode = new Node(elem);
+    public void insert(E elem) throws IllegalArgumentException, IllegalStateException {
 
-        //check whether the linkedScroll inserts element first time --> guard points to the new node
-        if(guard.next == guard && guard.prev == guard){
-            guard.next = newNode;
-            guard.prev = newNode;
-            newNode.next = guard;
-            newNode.prev = guard;
-            //update cursor
-            cursor.next = newNode;
-        }else{
-            //find the cursor to insert at cursor's right side
-            // make prev, next of new node the same as the cursor
-            newNode.next = cursor.next;
-            newNode.prev = cursor.prev;
-            // make necessary other node point
-            cursor.prev.next = newNode;
-            cursor.next.prev = newNode;
-            // modify the cursor links
-            cursor.next = newNode;
+        // error handle
+        if(elem == null){
+            throw new IllegalArgumentException();
+        }
+        if(this.leftLength() + this.rightLength() == getCapacity()){
+            throw new IllegalStateException();
         }
 
+        Node newNode = new Node(elem);
+        //find the cursor to insert at cursor's right side
+        // make necessary other node point
+        cursor.prev.next = newNode;
+        cursor.next.prev = newNode;
+        // make prev, next of new node the same as the cursor
+        newNode.next = cursor.next;
+        newNode.prev = cursor.prev;
+        // modify the cursor links
+        cursor.next = newNode;
 
 
     }
-    ///        cursor
-    /** [A,B] [C,D] --> [A,B]
-     * Deletes and returns the element to the right (next) of the cursor
-     * @return
-     * @throws IllegalStateException
-     */
+
     /**
-     * {@inheritDoc}
+     *
+     * Deletes and returns the element to the right (next) of the cursor
+     * @return the deleted element
+     * @throws IllegalStateException
      */
     @Override
     public E delete() throws IllegalStateException {
         // check whether the linkedList is empty
-        if(cursor.next == guard && cursor.prev == guard){
+        if(rightLength() == 0 ){
             throw new IllegalStateException();
         }
-        Node removedNode = cursor.next;
+        E removedNode = cursor.next.contents;
         // reset the pointer
         cursor.next = cursor.next.next;
-        return (E) removedNode;
-    }
-    //      c               c
-    /** [A][B,C] --> [A,B] [C]
-     * Advances the cursor one element to the right
-     * @throws IllegalStateException
-     */
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void advance()  {
-        cursor.next = cursor.next.next;
-        cursor.prev = cursor;
-        cursor = cursor.next;
+        cursor.next.prev = cursor.prev;
+        cursor.prev.next = cursor.next;
+        return removedNode;
     }
 
     /**
-     * {@inheritDoc}
+     * Advances the cursor one element to the right
+     * pre-state: [A][B,C]
+     * post-state : [A,B] [C]
+     * @throws IllegalStateException
+     */
+    @Override
+    public void advance() throws IllegalStateException  {
+        if(rightLength() == 0){
+            throw new IllegalStateException();
+        }
+        cursor.prev = cursor.next;
+        cursor.next = cursor.next.next;
+
+    }
+
+    /**
+     * Retreats the cursor one element to the left
+     * @throws IllegalStateException
      */
     @Override
     public void retreat() throws IllegalStateException {
         // move the cursor to the next element
-        if(cursor.next == guard && cursor.prev == guard){
+        if(leftLength() == 0){
             throw new IllegalStateException();
         }
+        cursor.next = cursor.prev;
         cursor.prev = cursor.prev.prev;
-        cursor.next = cursor;
-        cursor = cursor.prev;
+
+
     }
 
     /**
-     * {@inheritDoc}
+     *  Resets the cursor to the beginning of the scroll
      */
     @Override
-    public void reset() throws IllegalStateException {
+    public void reset(){
         cursor.prev  = guard;
         cursor.next = guard.next;
-
     }
 
     /**
-     * {@inheritDoc}
+     * Advances the cursor to the end of the scroll
+     * @throws IllegalStateException
      */
     @Override
     public void advanceToEnd() throws IllegalStateException {
@@ -130,7 +144,9 @@ public class LinkedScroll<E> extends AbstractScroll<E> {
     }
 
     /**
-     * {@inheritDoc}
+     * Swaps the right part of this scroll with the right part of that scroll
+     * @param that that scroll wants to swap right
+     * @throws IllegalStateException
      */
     @Override
     public void swapRights(Scroll<E> that) throws IllegalArgumentException {
@@ -142,36 +158,42 @@ public class LinkedScroll<E> extends AbstractScroll<E> {
     }
 
     /**
-     * {@inheritDoc}
+     * The number of elements to the left of the cursor
+     * @return the left length
      */
     @Override
     public int leftLength() {
         int counter = 0;
         Node temp = guard;
-        while (temp.next != cursor){
+        while (temp.next != cursor.next){
             temp  = temp.next;
             counter ++;
         }
         return counter;
     }
+
     /**
-     * {@inheritDoc}
+     * The number of elements to the right of the cursor
+     * @return the right length
      */
     @Override
     public int rightLength() {
-         Node temp = cursor;
+         Node temp = guard;
          int counter = 0;
-         while(temp.next != guard){
-             temp = temp.next;
+         while(temp.prev != cursor.prev){
+             temp = temp.prev;
              counter++;
          }
          return counter;
-
     }
-
+    /**
+     * Creates a new instance of a scroll. The new scroll has the same concrete type that "this" scroll does,
+     * and it also has the same capacity
+     * @return a LinkedScroll
+     */
     @Override
     public Scroll<E> newInstance() {
-        return new LinkedScroll<E>(capacity());
+        return new LinkedScroll<E>(this.capacity());
     }
 
 }

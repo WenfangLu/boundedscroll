@@ -2,9 +2,6 @@ package boundedscroll;
 
 import java.util.ListIterator;
 
-// TODO Add javadocs
-// TODO Add exceptions to signatures
-
 /**
  * A stack scroll data structure
  * @author Wenfang lu
@@ -27,13 +24,16 @@ public interface Scroll<E> extends Iterable<E> {
      */
     public E delete() throws IllegalStateException;
 
+
     /**
      * Get the cursor's right stack's bottom element and put it to this left stack
+     * @throws IllegalStateException
      */
     public void advance () throws IllegalStateException;
 
     /**
      * Retreats the cursor one element to the left
+     * @throws IllegalStateException
      */
     public void retreat() throws IllegalStateException;
 
@@ -44,8 +44,17 @@ public interface Scroll<E> extends Iterable<E> {
      */
     public void reset() throws IllegalStateException;
 
+    /**
+     * Advances the cursor to the end of the scroll
+     * @throws IllegalStateException
+     */
     public void advanceToEnd() throws IllegalStateException;
 
+    /**
+     * Swaps the right part of this scroll with the right part of that scroll
+     * @param that that scroll wants to swap right
+     * @throws IllegalStateException
+     */
     public void swapRights(Scroll<E> that) throws IllegalArgumentException;
 
     /**
@@ -66,17 +75,39 @@ public interface Scroll<E> extends Iterable<E> {
      */
     public int capacity();
 
+    /**
+     * A list iterator that starts at the cursor position.
+     * Note that list iterators can move forward and backwards
+     * @return ListIterator
+     */
     public ListIterator<E> listIterator();
 
+    /**
+     * Gets a handle to (does not remove) the element to the right of the curso
+     * @return the next element
+     */
     public E getNext();
 
+    /**
+     * Gets a handle to the element to the left of the cursor
+     * @return the previous element
+     */
     public E getPrevious();
 
+    /**
+     * 	Replaces the element to the right of the cursor and returns the original
+     * @param element
+     * @return removed element
+     */
     public E replace(E element);
 
     /**
-     *
-     * @param that
+     * Adds all the elements from *that* scroll to the left of the cursor in *this* scroll
+     * in the same order.
+     * PRE: this = [A, B, C][D, E, F] and that = [][X, Y, Z]
+     * STMT: this.splice(that);
+     * POST: this [A, B, C, X, Y, Z][D, E, F] and that = [][]
+     * @param that that scroll
      */
     public void splice(Scroll<E> that);
 
@@ -106,5 +137,9 @@ public interface Scroll<E> extends Iterable<E> {
      */
     public String toString();
 
+    /**
+     * Creates a new instance of a scroll
+     * @return the Scroll
+     */
     Scroll<E> newInstance();
 }

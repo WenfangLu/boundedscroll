@@ -4,6 +4,9 @@ import java.util.Stack;
 
 public class StackScroll<E> extends AbstractScroll<E> {
 
+    /**
+     * the right and left stacks of the scroll
+     */
     public Stack<E> left, right;
 
     /**
@@ -15,11 +18,11 @@ public class StackScroll<E> extends AbstractScroll<E> {
         left = new Stack<>();
         right = new Stack<>();
     }
-    // scroll [A,B,C] [D,E,F]
-    // left = [a,b,c] right = [f,e,d]
-    //      bottom
+
     /**
-     * {@inheritDoc}
+     * Inserts an element to the right of the cursor
+     * @param elem the element to be pushed into this scroll
+     * @throws IllegalArgumentException
      */
     @Override
     public void insert(E elem) throws IllegalArgumentException   {
@@ -30,7 +33,9 @@ public class StackScroll<E> extends AbstractScroll<E> {
         right.push(elem);
     }
     /**
-     * {@inheritDoc}
+     * Deletes and returns the element to the right of the cursor
+     * @return the removed element
+     * @throws IllegalStateException
      */
     @Override
     public E delete() throws IllegalStateException {
@@ -40,7 +45,8 @@ public class StackScroll<E> extends AbstractScroll<E> {
         return right.pop();
     }
     /**
-     * {@inheritDoc}
+     * Advances the cursor one element to the right
+     * @throws IllegalStateException
      */
     @Override
     public void advance() throws IllegalStateException {
@@ -49,7 +55,8 @@ public class StackScroll<E> extends AbstractScroll<E> {
         left.push(right.pop());
     }
     /**
-     * {@inheritDoc}
+     * Retreats the cursor one element to the left
+     * @throws IllegalStateException
      */
     @Override
     public void retreat() {
@@ -59,24 +66,22 @@ public class StackScroll<E> extends AbstractScroll<E> {
         right.push(left.pop());
     }
     /**
-     * {@inheritDoc}
+     *  Resets the cursor to the beginning of the scroll
      */
     @Override
     public void reset() throws IllegalStateException {
 
-//        if(leftLength() == 0){
-//            throw new IllegalStateException();
-//        }
         while(leftLength() != 0){
             retreat();
         }
     }
     /**
-     * {@inheritDoc}
+     * Advances the cursor to the end of the scroll
+     * @throws IllegalStateException
      */
     @Override
     public void advanceToEnd() throws IllegalStateException {
-        if(rightLength() ==0){
+        if(rightLength() == 0){
             throw new IllegalStateException();
         }
         while(rightLength() != 0){
@@ -85,30 +90,29 @@ public class StackScroll<E> extends AbstractScroll<E> {
     }
 
     /**
-     * {@inheritDoc}
+     * Swaps the right part of this scroll with the right part of that scroll
+     * @param that that scroll wants to swap right
+     * @throws IllegalStateException
      */
     @Override
-    public void swapRights(Scroll<E> that) throws IllegalArgumentException {
+    public void swapRights(Scroll<E> that) throws IllegalArgumentException,IllegalStateException {
 
-        // make sure the scroll not out of bound
-        if(this.leftLength() + that.rightLength() > this.capacity() ||
-                this.rightLength() + that.leftLength() > that.capacity()){
+        if(that == null){
             throw new IllegalArgumentException();
         }
-
-        if (that instanceof StackScroll) {
-            // swap right stack
-            StackScroll<E> stackScrollThat = (StackScroll<E>) that;
-            Stack<E> temp = this.right;
-            this.right = stackScrollThat.right;
-            stackScrollThat.right = temp;
-        }else{
-            super.swapRights(that);
+        // make sure the scroll not out of bound
+        if (that.rightLength() + this.leftLength() > this.capacity() ||
+                this.rightLength() + that.leftLength() > that.capacity()) {
+            throw new IllegalStateException();
         }
+
+        super.swapRights(that);
+
     }
 
     /**
-     * {@inheritDoc}
+     * The number of elements to the left of the cursor
+     * @return the left length
      */
     @Override
     public int leftLength() {
@@ -117,14 +121,19 @@ public class StackScroll<E> extends AbstractScroll<E> {
     }
 
     /**
-     * {@inheritDoc}
+     * The number of elements to the right of the cursor
+     * @return the right length
      */
     @Override
     public int rightLength() {
 
         return right.size();
     }
-
+    /**
+     * Creates a new instance of a scroll. The new scroll has the same concrete type that "this" scroll does,
+     * and it also has the same capacity
+     * @return a list scroll
+     */
     @Override
     public Scroll<E> newInstance(){
         return new StackScroll<E>(capacity());
